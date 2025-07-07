@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+
 const {
   getAllProperties,
   getPropertyById,
@@ -11,14 +12,19 @@ const {
   getPropertiesByType,
   getPropertyByDetails,
   getPropertyByIDandType,
+  toggleFavorite,
+  getFavoritePropertiesByCustomer,
+  searchProperties,
 } = require("../../Controller/Sellproperty/Sellproperty");
+
+const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "Public/sellproperty");
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     const fileName = `${Date.now()}${ext}`;
     cb(null, fileName);
   },
@@ -26,40 +32,53 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png/;
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-      return cb(null, true);
+    const ext = path.extname(file.originalname).toLowerCase();
+    console.log("Uploading file:", file.originalname, "with ext:", ext);
+    if (allowedExtensions.includes(ext)) {
+      cb(null, true);
     } else {
-      cb(new Error("Only jpeg, jpg, and png files are allowed."));
+      cb(
+        new Error(
+          "Only image files (.jpg, .jpeg, .png, .webp, .gif) are allowed."
+        )
+      );
     }
   },
 });
 
 const router = express.Router();
 
+// Wrap routes with multer error handling
+router.post("/properties", (req, res) => {
+  upload.array("propertyimage", 5)(req, res, function (err) {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    createProperty(req, res);
+  });
+});
+
+router.put("/properties/:id", (req, res) => {
+  upload.array("propertyimage", 5)(req, res, function (err) {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    updateProperty(req, res);
+  });
+});
+
+// Other routes (unchanged)
 router.get("/properties", getAllProperties);
-
 router.get("/properties/:id", getPropertyById);
-
-router.post("/properties", upload.array("propertyimage", 5), createProperty);
-
-router.put("/properties/:id", upload.array("propertyimage", 5), updateProperty);
-
 router.delete("/properties/:id", deleteProperty);
-
 router.get("/properties/city", getPropertiesByCity);
-
 router.get("/properties/type", getPropertiesByType);
-
 router.get("/properties/:propertyId/:customerId/:type", getPropertyByDetails);
-
 router.get("/getPropertyByIDandType/:propertyId/:type", getPropertyByIDandType);
+router.put("/favorite/:propertyId", toggleFavorite);
+router.get("/property/favorites/:customerId", getFavoritePropertiesByCustomer);
+router.post("/search", searchProperties);
 
 module.exports = router;

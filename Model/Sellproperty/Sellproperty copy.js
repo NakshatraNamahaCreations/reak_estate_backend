@@ -15,13 +15,6 @@ const GoogleAddressSchema = new mongoose.Schema({
   long: { type: String, required: true },
 });
 
-const OccupancyTypeSchema = new mongoose.Schema(
-  {
-    occupayname: { type: String },
-  },
-  { _id: false }
-);
-
 const PropertySchema = new mongoose.Schema(
   {
     propertytype: { type: String, required: true },
@@ -57,9 +50,11 @@ const PropertySchema = new mongoose.Schema(
     kunte: { type: String },
     diet: { type: String },
     bachelor_allowed: { type: String },
-    occupancy_type: [OccupancyTypeSchema],
+    occupancy_type: {
+      type: String,
+    },
     food_provided: { type: String },
-    profession_Type: [{ type: String }],
+    profession_Type: { type: String },
     favorite: { type: Boolean, default: false },
   },
   {

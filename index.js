@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const sellpropertyRoutes = require("./Routes/Sellproperty/Sellproperty");
 const path = require("path");
+const multer = require("multer");
 
 const app = express();
 

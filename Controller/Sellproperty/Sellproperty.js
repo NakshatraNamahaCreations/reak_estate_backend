@@ -72,18 +72,20 @@ exports.getPropertyById = async (req, res) => {
 
 //     const propertyData = { ...req.body };
 
-//     ["amenities", "nearbyplace", "googleaddress"].forEach((field) => {
-//       if (propertyData[field] && typeof propertyData[field] === "string") {
-//         try {
-//           propertyData[field] = JSON.parse(propertyData[field]);
-//         } catch (error) {
-//           return res.status(400).json({
-//             message: `Invalid JSON format in ${field}`,
-//             error: error.message,
-//           });
+//     ["amenities", "nearbyplace", "googleaddress", "occupancy_type"].forEach(
+//       (field) => {
+//         if (propertyData[field] && typeof propertyData[field] === "string") {
+//           try {
+//             propertyData[field] = JSON.parse(propertyData[field]);
+//           } catch (error) {
+//             return res.status(400).json({
+//               message: `Invalid JSON format in ${field}`,
+//               error: error.message,
+//             });
+//           }
 //         }
 //       }
-//     });
+//     );
 
 //     if (req.files && req.files.length > 0) {
 //       propertyData.propertyimage = req.files.map((file) => file.path);
@@ -99,6 +101,7 @@ exports.getPropertyById = async (req, res) => {
 //       property: savedProperty,
 //     });
 //   } catch (error) {
+//     console.error("Create Property Error:", error);
 //     res.status(500).json({ message: "Server error", error: error.message });
 //   }
 // };
@@ -111,21 +114,27 @@ exports.createProperty = async (req, res) => {
 
     const propertyData = { ...req.body };
 
-    ["amenities", "nearbyplace", "googleaddress", "occupancy_type"].forEach(
-      (field) => {
-        if (propertyData[field] && typeof propertyData[field] === "string") {
-          try {
-            propertyData[field] = JSON.parse(propertyData[field]);
-          } catch (error) {
-            return res.status(400).json({
-              message: `Invalid JSON format in ${field}`,
-              error: error.message,
-            });
-          }
+    // List all fields that may come as JSON strings and should be parsed
+    [
+      "amenities",
+      "nearbyplace",
+      "googleaddress",
+      "occupancy_type",
+      "profession_Type",
+    ].forEach((field) => {
+      if (propertyData[field] && typeof propertyData[field] === "string") {
+        try {
+          propertyData[field] = JSON.parse(propertyData[field]);
+        } catch (error) {
+          return res.status(400).json({
+            message: "Invalid JSON format in ${field}",
+            error: error.message,
+          });
         }
       }
-    );
+    });
 
+    // Handle property images if files are uploaded
     if (req.files && req.files.length > 0) {
       propertyData.propertyimage = req.files.map((file) => file.path);
     }

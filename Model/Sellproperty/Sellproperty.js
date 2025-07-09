@@ -61,6 +61,7 @@ const PropertySchema = new mongoose.Schema(
     food_provided: { type: String },
     profession_Type: [{ type: String }],
     favorite: { type: Boolean, default: false },
+    rera_id: { type: String },
   },
   {
     timestamps: true,

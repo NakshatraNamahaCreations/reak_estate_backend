@@ -1,25 +1,22 @@
 require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const sellpropertyRoutes = require("./Routes/Sellproperty/Sellproperty");
+const favoriteRoutes = require("./Routes/Sellproperty/Favorite");
 const path = require("path");
 const multer = require("multer");
 
 const app = express();
-
 app.use(express.json());
-
-// Parse URL-encoded bodies (for form submissions)
 app.use(express.urlencoded({ extended: true }));
 
-// app.use("/Public", express.static(path.join(__dirname, "Public")));
 app.use(
   "/sellproperty",
   express.static(path.join(__dirname, "Public/sellproperty"))
 );
 
 app.use("/api/sell", sellpropertyRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 const PORT = process.env.CONTENT_PORT || 8001;
 const MONGO_URI = process.env.CONTENT_MONGO_URI;

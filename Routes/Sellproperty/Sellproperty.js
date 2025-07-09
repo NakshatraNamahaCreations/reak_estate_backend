@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-
 const {
   getAllProperties,
   getPropertyById,
@@ -32,7 +31,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     console.log("Uploading file:", file.originalname, "with ext:", ext);
@@ -50,7 +49,6 @@ const upload = multer({
 
 const router = express.Router();
 
-// Wrap routes with multer error handling
 router.post("/properties", (req, res) => {
   upload.array("propertyimage", 5)(req, res, function (err) {
     if (err) {
@@ -68,8 +66,6 @@ router.put("/properties/:id", (req, res) => {
     updateProperty(req, res);
   });
 });
-
-// Other routes (unchanged)
 router.get("/properties", getAllProperties);
 router.get("/properties/:id", getPropertyById);
 router.delete("/properties/:id", deleteProperty);

@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const sellpropertyRoutes = require("./Routes/Sellproperty/Sellproperty");
 const favoriteRoutes = require("./Routes/Sellproperty/Favorite");
+const userRoute = require("./Routes/Auth/User");
 const path = require("path");
 const multer = require("multer");
 
@@ -17,6 +18,7 @@ app.use(
 
 app.use("/api/sell", sellpropertyRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api", userRoute);
 
 const PORT = process.env.CONTENT_PORT || 8001;
 const MONGO_URI = process.env.CONTENT_MONGO_URI;

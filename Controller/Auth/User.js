@@ -82,17 +82,50 @@ class UserController {
 
   async getAlluser(req, res) {
     try {
-      const alluser = await User.find({});
+      const alluser = await User.find();
 
       if (!alluser) {
         return res.status(400).json({ message: "No User found." });
       }
 
-      res.status(200).json({ message: "All User", data: alluser });
+      return res.status(200).json({ message: "All User", data: alluser });
     } catch (e) {
-      res
-        .status(500)
-        .json({ message: "Failed to get all user - " + e.message });
+      console.log("e", e);
+      res.status(500).json({ message: "Failed to get all user - " + e });
+    }
+  }
+
+  async updateUser(req, res) {
+    try {
+      const { userId } = req.params;
+      const { gender, professional, socialmedialink } = req.body;
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      if (gender) user.gender = gender;
+      if (professional) user.professional = professional;
+      if (socialmedialink) user.socialmedialink = socialmedialink;
+
+      await user.save();
+
+      return res.status(200).json({
+        message: "User updated successfully!",
+        data: {
+          userName: user.userName,
+          email: user.email,
+          phonenumber: user.phonenumber,
+          gender: user.gender,
+          professional: user.professional,
+          socialmedialink: user.socialmedialink,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   }
 }

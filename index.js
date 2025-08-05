@@ -4,12 +4,23 @@ const mongoose = require("mongoose");
 const sellpropertyRoutes = require("./Routes/Sellproperty/Sellproperty");
 const favoriteRoutes = require("./Routes/Sellproperty/Favorite");
 const userRoute = require("./Routes/Auth/User");
+const AdminuserRoute = require("./Routes/Auth/Admin");
+const EnquiryRoute = require("./Routes/Enquiry/Enquiry");
 const path = require("path");
 const multer = require("multer");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(
   "/sellproperty",
@@ -18,6 +29,8 @@ app.use(
 
 app.use("/api/sell", sellpropertyRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/admin", AdminuserRoute);
+app.use("/api/enquiry", EnquiryRoute);
 app.use("/api", userRoute);
 
 const PORT = process.env.CONTENT_PORT || 8001;

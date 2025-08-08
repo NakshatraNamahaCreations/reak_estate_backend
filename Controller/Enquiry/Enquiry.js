@@ -120,7 +120,7 @@ exports.acceptEnquiry = async (req, res) => {
 
     const updatedEnquiry = await Enquiry.findByIdAndUpdate(
       enquiryId,
-      { accepted: true },
+      { accepted: true, status: "accept" },
       { new: true }
     );
 
@@ -146,7 +146,7 @@ exports.rejectEnquiry = async (req, res) => {
 
     const updatedEnquiry = await Enquiry.findByIdAndUpdate(
       enquiryId,
-      { accepted: false },
+      { accepted: false, status: "reject" },
       { new: true }
     );
 
@@ -168,7 +168,9 @@ exports.rejectEnquiry = async (req, res) => {
 
 exports.getAcceptedEnquiries = async (req, res) => {
   try {
-    const acceptedEnquiries = await Enquiry.find({ accepted: true }).populate({
+    const acceptedEnquiries = await Enquiry.find({
+      accepted: true,
+    }).populate({
       path: "propertyId",
       model: Property,
     });
@@ -191,7 +193,9 @@ exports.getAcceptedEnquiries = async (req, res) => {
 
 exports.getRejectedEnquiries = async (req, res) => {
   try {
-    const rejectedEnquiries = await Enquiry.find({ accepted: false }).populate({
+    const rejectedEnquiries = await Enquiry.find({
+      accepted: false,
+    }).populate({
       path: "propertyId",
       model: Property,
     });
@@ -271,6 +275,60 @@ exports.getallpropertyEnquiries = async (req, res) => {
 //   }
 // };
 
+// Working code
+
+// exports.getEnquiriesByCustomerId = async (req, res) => {
+//   try {
+//     const { customerId } = req.params;
+
+//     if (!customerId) {
+//       return res.status(400).json({ message: "customerId is required." });
+//     }
+
+//     const properties = await Property.find({ customerId });
+//     if (!properties.length) {
+//       return res
+//         .status(404)
+//         .json({ message: "No properties found for this customer." });
+//     }
+
+//     const result = await Promise.all(
+//       properties.map(async (property) => {
+//         const enquiries = await Enquiry.find({
+//           propertyId: property._id,
+//         }).select("userName phoneNumber userId");
+//         return {
+//           property,
+//           users: enquiries.map((enquiry) => ({
+//             enquiryId: enquiry._id,
+//             userId: enquiry.userId,
+//             userName: enquiry.userName,
+//             phoneNumber: enquiry.phoneNumber,
+//           })),
+//         };
+//       })
+//     );
+
+//     if (!result.some((item) => item.users.length > 0)) {
+//       return res.status(404).json({
+//         message: "No enquiries found for this customer's properties.",
+//         data: result,
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Properties and associated enquiries fetched successfully",
+//       data: result,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching enquiries by customerId:", error);
+//     res.status(500).json({
+//       message: "Failed to fetch enquiries - " + error.message,
+//     });
+//   }
+// };
+
+// 1234532
 exports.getEnquiriesByCustomerId = async (req, res) => {
   try {
     const { customerId } = req.params;
@@ -290,13 +348,15 @@ exports.getEnquiriesByCustomerId = async (req, res) => {
       properties.map(async (property) => {
         const enquiries = await Enquiry.find({
           propertyId: property._id,
-        }).select("userName phoneNumber userId");
+        }).select("userName phoneNumber userId _id status");
         return {
           property,
           users: enquiries.map((enquiry) => ({
+            enquiryId: enquiry._id,
             userId: enquiry.userId,
             userName: enquiry.userName,
             phoneNumber: enquiry.phoneNumber,
+            status: enquiry.status,
           })),
         };
       })
@@ -320,3 +380,57 @@ exports.getEnquiriesByCustomerId = async (req, res) => {
     });
   }
 };
+
+// exports.getEnquiriesByCustomerId = async (req, res) => {
+//   try {
+//     const { customerId } = req.params;
+
+//     if (!customerId) {
+//       return res.status(400).json({ message: "customerId is required." });
+//     }
+
+//     const properties = await Property.find({ customerId });
+//     if (!properties.length) {
+//       return res
+//         .status(404)
+//         .json({ message: "No properties found for this customer." });
+//     }
+
+//     const result = await Promise.all(
+//       properties.map(async (property) => {
+//         const enquiries = await Enquiry.find({
+//           propertyId: property._id,
+//         }).select("userName phoneNumber userId _id status");
+//         return {
+//           property, // Include full property data
+//           users: enquiries.map((enquiry) => ({
+//             enquiryId: enquiry._id,
+//             userId: enquiry.userId,
+//             userName: enquiry.userName,
+//             phoneNumber: enquiry.phoneNumber,
+//             status: enquiry.status,
+//           })),
+//         };
+//       })
+//     );
+
+//     // Filter results to include only properties with enquiries
+//     const filteredResult = result.filter((item) => item.users.length > 0);
+
+//     if (!filteredResult.length) {
+//       return res.status(404).json({
+//         message: "No enquiries found for this customer's properties.",
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Properties and associated enquiries fetched successfully",
+//       data: filteredResult,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching enquiries by customerId:", error);
+//     res.status(500).json({
+//       message: "Failed to fetch enquiries - " + error.message,
+//     });
+//   }
+// };

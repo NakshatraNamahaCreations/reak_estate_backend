@@ -10,6 +10,7 @@ const EnquirySchema = new mongoose.Schema({
     required: true,
   },
   accepted: { type: Boolean, default: false },
+  status: { type: String, default: "pending" },
 });
 
 const Enquiry = mongoose.model("Enquiry", EnquirySchema);

@@ -2,12 +2,46 @@ const Enquiry = require("../../Model/Enquiry/Enquiry");
 const Property = require("../../Model/Sellproperty/Sellproperty");
 const User = require("../../Model/Auth/User");
 
+// exports.createEnquiry = async (req, res) => {
+//   try {
+//     const { userName, phoneNumber, userId, propertyId } = req.body;
+
+//     if (!userName || !phoneNumber || !userId || !propertyId) {
+//       return res.status(400).json({ message: "All fields are required." });
+//     }
+
+//     const newEnquiry = new Enquiry({
+//       userName,
+//       phoneNumber,
+//       userId,
+//       propertyId,
+//     });
+
+//     await newEnquiry.save();
+//     res
+//       .status(200)
+//       .json({ message: "Enquiry created successfully!", data: newEnquiry });
+//   } catch (error) {
+//     console.error("Error creating enquiry:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Failed to create enquiry - " + error.message });
+//   }
+// };
+
 exports.createEnquiry = async (req, res) => {
   try {
     const { userName, phoneNumber, userId, propertyId } = req.body;
 
     if (!userName || !phoneNumber || !userId || !propertyId) {
       return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const existingEnquiry = await Enquiry.findOne({ userId, propertyId });
+    if (existingEnquiry) {
+      return res
+        .status(400)
+        .json({ message: "You have already enquired about this property." });
     }
 
     const newEnquiry = new Enquiry({
@@ -201,6 +235,42 @@ exports.getallpropertyEnquiries = async (req, res) => {
   }
 };
 
+// exports.getEnquiriesByCustomerId = async (req, res) => {
+//   try {
+//     const { customerId } = req.params;
+
+//     if (!customerId) {
+//       return res.status(400).json({ message: "customerId is required." });
+//     }
+
+//     const enquiries = await Enquiry.find().populate({
+//       path: "propertyId",
+//       model: Property,
+//       match: { customerId: customerId },
+//     });
+
+//     const validEnquiries = enquiries.filter(
+//       (enquiry) => enquiry.propertyId !== null
+//     );
+
+//     if (!validEnquiries.length) {
+//       return res.status(404).json({
+//         message: "No enquiries found for the given customerId.",
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Enquiries and associated properties fetched successfully",
+//       data: validEnquiries,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching enquiries by customerId:", error);
+//     res.status(500).json({
+//       message: "Failed to fetch enquiries - " + error.message,
+//     });
+//   }
+// };
+
 exports.getEnquiriesByCustomerId = async (req, res) => {
   try {
     const { customerId } = req.params;
@@ -209,25 +279,39 @@ exports.getEnquiriesByCustomerId = async (req, res) => {
       return res.status(400).json({ message: "customerId is required." });
     }
 
-    const enquiries = await Enquiry.find().populate({
-      path: "propertyId",
-      model: Property,
-      match: { customerId: customerId },
-    });
+    const properties = await Property.find({ customerId });
+    if (!properties.length) {
+      return res
+        .status(404)
+        .json({ message: "No properties found for this customer." });
+    }
 
-    const validEnquiries = enquiries.filter(
-      (enquiry) => enquiry.propertyId !== null
+    const result = await Promise.all(
+      properties.map(async (property) => {
+        const enquiries = await Enquiry.find({
+          propertyId: property._id,
+        }).select("userName phoneNumber userId");
+        return {
+          property,
+          users: enquiries.map((enquiry) => ({
+            userId: enquiry.userId,
+            userName: enquiry.userName,
+            phoneNumber: enquiry.phoneNumber,
+          })),
+        };
+      })
     );
 
-    if (!validEnquiries.length) {
+    if (!result.some((item) => item.users.length > 0)) {
       return res.status(404).json({
-        message: "No enquiries found for the given customerId.",
+        message: "No enquiries found for this customer's properties.",
+        data: result,
       });
     }
 
     res.status(200).json({
-      message: "Enquiries and associated properties fetched successfully",
-      data: validEnquiries,
+      message: "Properties and associated enquiries fetched successfully",
+      data: result,
     });
   } catch (error) {
     console.error("Error fetching enquiries by customerId:", error);

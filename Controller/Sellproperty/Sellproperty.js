@@ -174,7 +174,6 @@ exports.getPropertiesByType = async (req, res) => {
 
 exports.getPropertyByDetails = async (req, res) => {
   const { propertyId, customerId, type } = req.params;
-
   try {
     const property = await Property.findOne({
       _id: propertyId,
@@ -187,7 +186,6 @@ exports.getPropertyByDetails = async (req, res) => {
         message: "Property not found for this customer with the specified type",
       });
     }
-
     res.status(200).json(property);
   } catch (error) {
     console.error(error);
@@ -199,19 +197,16 @@ exports.getPropertyByDetails = async (req, res) => {
 
 exports.getPropertyByIDandType = async (req, res) => {
   const { propertyId, type } = req.params;
-
   try {
     const property = await Property.findOne({
       _id: propertyId,
       type: type,
     });
-
     if (!property) {
       return res.status(404).json({
         message: "Property not found for this customer with the specified type",
       });
     }
-
     res.status(200).json(property);
   } catch (error) {
     console.error(error);

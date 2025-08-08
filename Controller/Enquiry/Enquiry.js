@@ -1,5 +1,6 @@
 const Enquiry = require("../../Model/Enquiry/Enquiry");
 const Property = require("../../Model/Sellproperty/Sellproperty");
+const User = require("../../Model/Auth/User");
 
 exports.createEnquiry = async (req, res) => {
   try {
@@ -51,7 +52,7 @@ exports.getAllEnquiries = async (req, res) => {
 exports.getEnquiryByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
-    const enquiry = await Enquiry.findOne({ userId }).populate({
+    const enquiry = await Enquiry.find({ userId }).populate({
       path: "propertyId",
       model: Property,
     });
@@ -68,7 +69,7 @@ exports.getEnquiryByUserId = async (req, res) => {
       message: "Enquiry found successfully with property data",
       data: {
         enquiry: enquiry,
-        property: propertyData,
+        // property: propertyData,
       },
     });
   } catch (error) {
@@ -78,6 +79,7 @@ exports.getEnquiryByUserId = async (req, res) => {
       .json({ message: "Failed to fetch enquiry - " + error.message });
   }
 };
+
 exports.acceptEnquiry = async (req, res) => {
   try {
     const { enquiryId } = req.params;
@@ -193,6 +195,42 @@ exports.getallpropertyEnquiries = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching enquiries:", error);
+    res.status(500).json({
+      message: "Failed to fetch enquiries - " + error.message,
+    });
+  }
+};
+
+exports.getEnquiriesByCustomerId = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+
+    if (!customerId) {
+      return res.status(400).json({ message: "customerId is required." });
+    }
+
+    const enquiries = await Enquiry.find().populate({
+      path: "propertyId",
+      model: Property,
+      match: { customerId: customerId },
+    });
+
+    const validEnquiries = enquiries.filter(
+      (enquiry) => enquiry.propertyId !== null
+    );
+
+    if (!validEnquiries.length) {
+      return res.status(404).json({
+        message: "No enquiries found for the given customerId.",
+      });
+    }
+
+    res.status(200).json({
+      message: "Enquiries and associated properties fetched successfully",
+      data: validEnquiries,
+    });
+  } catch (error) {
+    console.error("Error fetching enquiries by customerId:", error);
     res.status(500).json({
       message: "Failed to fetch enquiries - " + error.message,
     });

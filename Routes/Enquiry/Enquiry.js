@@ -18,4 +18,9 @@ router.get("/rejected", enquiryController.getRejectedEnquiries);
 
 router.get("/getallenquiries", enquiryController.getallpropertyEnquiries);
 
+router.get(
+  "/enquiries/customer/:customerId",
+  enquiryController.getEnquiriesByCustomerId
+);
+
 module.exports = router;

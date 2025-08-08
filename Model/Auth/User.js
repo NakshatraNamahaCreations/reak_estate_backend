@@ -5,9 +5,9 @@ const UserSchema = new mongoose.Schema({
   phonenumber: { type: Number, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
-  gender: { type: String, required: true },
-  professional: { type: String, required: true },
-  socialmedialink: { type: String, required: true },
+  gender: { type: String },
+  professional: { type: String },
+  socialmedialink: { type: String },
 });
 
 const User = mongoose.model("User", UserSchema);

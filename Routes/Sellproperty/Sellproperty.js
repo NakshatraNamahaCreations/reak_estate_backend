@@ -50,7 +50,7 @@ const upload = multer({
 const router = express.Router();
 
 router.post("/properties", (req, res) => {
-  upload.array("propertyimage", 5)(req, res, function (err) {
+  upload.array("propertyimage", 10)(req, res, function (err) {
     if (err) {
       return res.status(400).json({ error: err.message });
     }
@@ -59,7 +59,7 @@ router.post("/properties", (req, res) => {
 });
 
 router.put("/properties/:id", (req, res) => {
-  upload.array("propertyimage", 5)(req, res, function (err) {
+  upload.array("propertyimage", 10)(req, res, function (err) {
     if (err) {
       return res.status(400).json({ error: err.message });
     }
